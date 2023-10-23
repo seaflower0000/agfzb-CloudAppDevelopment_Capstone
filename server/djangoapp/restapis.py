@@ -79,12 +79,12 @@ def get_dealer_by_id(url, dealer_id):
     # Call get_request with the dealer_id param
     json_result = get_request(url, dealerId=dealer_id)
     # Create a CarDealer object from response
-    dealer = json_result["review"]
+    dealer = json_result["review"][0]
     dealer_obj = CarDealer(address=dealer["address"], city=dealer["city"], full_name=dealer["full_name"],
                            id=dealer["id"], lat=dealer["lat"], long=dealer["long"],
                            short_name=dealer["short_name"],
-                           st=dealer["st"], state=dealer["state"], zip=dealer["zip"])
-
+                           st=dealer["st"], zip=dealer["zip"])
+    print(dealer_obj)
     return dealer_obj
 
 # Create a get_dealer_reviews_from_cf method to get reviews by dealer id from a cloud function
@@ -143,13 +143,8 @@ def get_dealer_reviews_from_cf(url, dealer_id):
 # - Get the returned sentiment label such as Positive or Negative
 def analyze_review_sentiments(dealerreview):
     # Watson NLU configuration
-    try:
-        if os.environ['env_type'] == 'PRODUCTION':
-            url = os.environ['WATSON_NLU_URL']
-            api_key = os.environ["WATSON_NLU_API_KEY"]
-    except KeyError:
-        url = config('WATSON_NLU_URL')
-        api_key = config('WATSON_NLU_API_KEY')
+    url = ('https://api.au-syd.natural-language-understanding.watson.cloud.ibm.com/instances/ebbffffb-3a0d-4614-a5fc-788d4d74f708')
+    api_key = ('wKD3JjSbvijlAhbkH8Tp08cW9Eyzb8-fU1B-gN6isfbR')
 
     version = '2022-04-07'
     authenticator = IAMAuthenticator(api_key)

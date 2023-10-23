@@ -10,6 +10,7 @@ from django.contrib import messages
 from datetime import datetime
 import logging
 import json
+from .models import CarModel
 
 # Get an instance of a logger
 logger = logging.getLogger(__name__)
@@ -76,13 +77,15 @@ def registration_request(request):
 # Update the `get_dealerships` view to render the index page with a list of dealerships
 def get_dealerships(request):
     if request.method == "GET":
+        context = {}
         url = "https://us-south.functions.appdomain.cloud/api/v1/web/f3c3a990-ae73-4efb-928c-cec25742c4ca/dealership/dealership"
         # Get dealers from the URL
-        dealerships = get_dealers_from_cf(url)
-        # Concat all dealer's short name
-        dealer_names = ' '.join([dealer.short_name for dealer in dealerships])
-        # Return a list of dealer short name
-        return HttpResponse(dealer_names)
+        context["dealerships"] = get_dealers_from_cf(url)
+
+        # dealer_names = ' '.join([dealer.short_name for dealer in context["dealerships"]])
+        # return HttpResponse(dealer_names)
+
+        return render(request, 'djangoapp/index.html', context)
 
 
 # Create a `get_dealer_details` view to render the reviews of a dealer
@@ -126,10 +129,10 @@ def add_review(request, dealer_id):
             if review["purchase"]:
                 review["purchase_date"] = datetime.strptime(form.get("purchasedate"), "%m/%d/%Y").isoformat()
             car = CarModel.objects.get(pk=form["car"])
-            review["car_make"] = car.car_make.name
+            review["car_make"] = car.make.name
             review["car_model"] = car.name
             review["car_year"] = car.year
-            
+
             # If the user bought the car, get the purchase date
             if form.get("purchasecheck"):
                 review["purchase_date"] = datetime.strptime(form.get("purchasedate"), "%m/%d/%Y").isoformat()
